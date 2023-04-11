@@ -1,6 +1,11 @@
 
 		.section rom_code
 
+;**************************************************
+;**************************************************
+;Initialise all modules if not already initialised. 
+; 
+;**************************************************
 Initialise		sei
 				;Is already initialised
 				lda Interrupts.NMIInterrupt+1
@@ -14,7 +19,7 @@ Initialise		sei
 				;Config RX packet buffer
 +				lda #>RX_BUFFER_RAM
 				ldx #>(RX_BUFFER_RAM+RX_BUFFER_SIZE-$100)
-				ldy #BANK
+				ldy #RX_BUFFER_BANK
 				jsr Memory.Initialise
 				;Configure stack modules
 				jsr ARP.Initialise

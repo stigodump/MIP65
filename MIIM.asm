@@ -1,5 +1,5 @@
 
-		.section base_ram_data
+		.section base_page_ram
 conn_status			.fill 1
 conn_tmr			.fill 1
 		.send

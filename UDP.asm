@@ -10,7 +10,7 @@ SourcePort 			= header.source_port_num
 DestPort 			= header.dest_port_num
 DestIP 				= IPv4.header.dest_ip
 
-		.section base_ram_data
+		.section base_page_ram
 skt_pntr			.fill 2
 udp_rx_count		.fill 2
 temp_bp				.fill 1
@@ -227,7 +227,8 @@ system_ports		ldx rx_dest_port
 					;Is port number HTTP 80
 +					cpx #80
 					bne unknown_port
-					jmp HTTP.ReceivedPacket
+					;Jump to HTTP handler
+					rts
 
 					;Not known port number
 unknown_port		rts
@@ -305,7 +306,7 @@ set_ch_pntr			lda ch_lo_bytes,x
 					sta skt_pntr+1
 					rts
 
-channels	:=(Command.socket1,Command.socket2,Command.socket3,Command.socket4,Command.socket5,Command.socket6,Command.socket7,Command.socket8)
+channels	:=(Command.socket1,Command.socket2)
 ch_lo_bytes			.byte <channels
 ch_hi_bytes			.byte >channels
 

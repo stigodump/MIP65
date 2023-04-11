@@ -26,7 +26,7 @@ TP_ARP_REQUEST		= 2
 arp_table				.fill ARP_ENTRY_SIZE * ARP_ENTY_COUNT
 		.send
 
-		.section base_ram_data
+		.section base_page_ram
 arp_pkt					.dstruct ARP_PACKET
 arp_error_cnt			.fill 2
 arp_recvd_cnt			.fill 2
@@ -56,7 +56,7 @@ Initialise				lda #0
 						;Copy ARP packet to RAM
 ReceivedPacket			lda #<arp_pkt
 						sta Ethernet.RXDestAddrL
-						lda #>BASE_DATA_RAM
+						lda #>BASE_PAGE_RAM
 						sta Ethernet.RXDestAddrH
 						lda #BANK
 						sta Ethernet.RXDestBank
@@ -125,7 +125,7 @@ respond_arp				ldx #10-1
 						;Sent the ARP packet
 send_arp_packet			lda #<arp_pkt
 						sta Command.command_list.data_addr
-						lda #>BASE_DATA_RAM
+						lda #>BASE_PAGE_RAM
 						sta Command.command_list.data_addr+1
 						lda #BANK
 						sta Command.command_list.data_bank
@@ -200,7 +200,7 @@ dma_arp_insert			.byte %00000100 									;command low byte: COPY+CHAIN
 						;DMA job to insert new ARP entery					
 						.byte %00000000										;command low byte: COPY
 						.word ARP_ENTRY_SIZE								;copy count
-						.byte <arp_pkt.sender_ha,>BASE_DATA_RAM				;source address
+						.byte <arp_pkt.sender_ha,>BASE_PAGE_RAM				;source address
 						.byte BANK 											;source Bank Direction down
 						.word arp_table+(ARP_ENTRY_SIZE*(ARP_ENTY_COUNT-1))	;destination address
 						.byte BANK 											;destination Bank
@@ -209,7 +209,7 @@ dma_arp_insert			.byte %00000100 									;command low byte: COPY+CHAIN
 						;DMA job to insert new ARP entery					
 dma_router_mac			.byte %00000000										;command low byte: COPY
 						.word size(arp_pkt.sender_ha)						;copy count
-						.byte <arp_pkt.sender_ha,>BASE_DATA_RAM				;source address
+						.byte <arp_pkt.sender_ha,>BASE_PAGE_RAM				;source address
 						.byte BANK 											;source Bank Direction down
 						.word Command.network_status.gateway_mac			;destination address
 						.byte BANK 											;destination Bank
@@ -243,7 +243,7 @@ AddressLookup			ldx #4-1
 						;Set arp_table_pntr to gateway MAC address
 not_local_address		lda #<Command.network_status.gateway_mac
 						sta arp_table_pntr
-						lda #<Command.network_status.gateway_mac
+						lda #>Command.network_status.gateway_mac
 						sta arp_table_pntr+1
 
 						;Copy MAC address to command list

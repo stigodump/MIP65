@@ -29,11 +29,11 @@ RXDestAddrH			= dma_list_rx.dest_addr_h
 RXDestBank			= dma_list_rx.dest_bank
 
 
-		.section base_ram_data
+		.section base_page_ram
 pkt_rx_info		.fill 2		;Received packet info
 pkt_error_cnt	.fill 2		;16bit packet error counter
 total_rx_bytes	.fill 4 	;32bit total received data bytes
-total_tx_bytes	.fill 4 	;32BIT total sent data bytes
+total_tx_bytes	.fill 4 	;32bit total sent data bytes
 ether_buff_ptr	.fill 4 	;32bit pointer to Ethernet TX/RX buffer
 temp_bp			.fill 1
 		.send 

@@ -141,7 +141,7 @@ not_raster		lda #$00
 				;Set Base Page pointer
 				tba
 				pha
-				lda #>BASE_DATA_RAM
+				lda #>BASE_PAGE_RAM
 				tab
 				eom
 

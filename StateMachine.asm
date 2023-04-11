@@ -19,7 +19,7 @@ ST_RUN_CMD 			= 1<<ST_RUN_CMD_b
 
 TX_TIMEOUT		= 2
 
-		.section base_ram_data
+		.section base_page_ram
 rx_timer 			.fill 1
 tx_timer			.fill 1
 state 				.fill 1
@@ -137,6 +137,17 @@ DisConnEvent 		lda #ST_CONNECTED|ST_NETWORK_UP|ST_DHCP_STATIC
 					bbr ST_RX_BUSY_b,state,ErrorEvent
 					lda #1 					;Network error
 					jmp (timeout_pntr)					
+
+;**************************************************
+;**************************************************
+;Set connected state in state machine
+; 
+;**************************************************
+SetConnected		lda #ST_CONNECTED
+					tsb state
+					lda #ST_DHCP_STATIC
+					trb state
+					ldz #DataTypes.MESSAGES.cmd_complete
 
 ;**************************************************
 ;**************************************************

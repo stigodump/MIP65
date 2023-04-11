@@ -7,7 +7,7 @@
 ;	Date: 30/01/2023
 ;	Assembler: 64TAS Must be at least build 2625
 ;	64tass-1.56.2625\64tass.exe -a Build.asm -o Build.prg --tab-size=4
-;	Xemu: Nexys4 with BIT 20220109.16,F7554A8 & ROM 920300 
+;	Platform: MEGA65 R3 
 ;
 ;******************************************************************
 
@@ -19,25 +19,20 @@ BASIC_CODE			= $2001
 ;Code for interrupt and code entery points in common ram
 WEDGE_CODE			= $1600
 
-;Working BANK for code and data, 16K below
+;Working BANK for code and data below
 BANK				= 4
 
-;8K block for variables and code
+;8K block for data and code
 MAIN_DATA_RAM		= $4000
-MAIN_RAM_SIZE		= $0100
-
 BASE_DATA_RAM		= $4200	
-BASE_DATA_SIZE		= $100
-
-BASE_MEM_RAM		= $4300	
-BASE_MEM_SIZE		= $100
-
+BASE_PAGE_RAM		= $4300	
 MAIN_CODE_ROM		= $4400
-MAIN_CODE_SIZE		= $1d00
+MEM_END				= $5fff
 
-;8K block for received network packets
-RX_BUFFER_RAM		= $6000
+;8K block for TX/RX network packet buffer
+RX_BUFFER_RAM		= $4000
 RX_BUFFER_SIZE		= $2000
+RX_BUFFER_BANK		= 5
 
 * = ZERO_PAGE
 	.dsection zero_page
@@ -48,9 +43,11 @@ RX_BUFFER_SIZE		= $2000
 	.cerror * > $7fff, "Not enough space"
 
 	.section basic_code
-		.byte $09,$20,$0a,$00,$fe,$02,$30,$00        			;10 BANK0
-		.text $13,$20,$14,$00,$9e, format("%4d", start), $00	;20 SYS start
-		.word $0000 											;end of BASIC
+		.word (+), 10
+		.byte $fe,$02,$30,$00        			;10 BANK0
++		.word (+), 20
+		.text $9e, format("%4d", start), $00	;20 SYS start
++		.word 0									;end of BASIC
 	
 				;Set DMAgic to F018B
 start			lda #%00000001
@@ -77,28 +74,27 @@ dma_copy 		.byte %00000000 				;command low byte: COPY+CHAIN
 			.include "Macros.asm"
 
 ;**************************************************************
-				;Code and Data
-
-copy_code	.logical MAIN_CODE_ROM
-			.dsection rom_code
-			.cerror * > * + MAIN_CODE_SIZE - 1, "ROM error"
-			.here
-		
+			;Code and Data
 			.virtual MAIN_DATA_RAM
 			.dsection ram_data
-			.cerror * > * + MAIN_RAM_SIZE - 1, "RAM error"
-			.endv
-
-			.virtual <BASE_MEM_RAM
-			.dsection base_mem_ram
-			.cerror * > * + BASE_MEM_SIZE - 1, "Base mem RAM error"
+			.cerror * > BASE_DATA_RAM - 1, "RAM error"
 			.endv
 
 			.virtual <BASE_DATA_RAM
-			.dsection base_ram_data
-			.cerror * > * + BASE_DATA_SIZE - 1, "Base RAM error"
+			.dsection base_data_ram
+			.cerror * > BASE_PAGE_RAM - 1, "Base data RAM error"
 			.endv
 
+			.virtual <BASE_PAGE_RAM
+			.dsection base_page_ram
+			.cerror * > MAIN_CODE_ROM - 1, "Base page RAM error"
+			.endv
+
+copy_code	.logical MAIN_CODE_ROM
+			.dsection rom_code
+			.cerror * > MEM_END, "ROM error"
+			.here
+		
 DataTypes	.binclude "DataTypes.asm"
 Command 	.binclude "Command.asm"
 Initialise	.binclude "Initialise.asm"
@@ -113,7 +109,6 @@ IPv4		.binclude "IPv4.asm"
 UDP			.binclude "UDP.asm"
 ARP			.binclude "ARP.asm"
 DHCP		.binclude "DHCP.asm"
-HTTP		.binclude "HTTP.asm"
 
 	.send
 

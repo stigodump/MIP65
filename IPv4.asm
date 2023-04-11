@@ -12,7 +12,7 @@ dest_ip				.fill 4
 			.endstruct
 IPv4_HEAD_SIZE		= size(IPV4_HEADER)
 
-		.section base_ram_data
+		.section base_page_ram
 checksum			.fill 2
 ipv4_rx_count		.fill 2
 		.send 

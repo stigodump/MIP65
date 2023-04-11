@@ -1,5 +1,5 @@
-		.section base_mem_ram
-page_alloc				.fill 256
+		.section base_data_ram
+page_alloc			.fill 256
 		.send
 
 		.section ram_data
@@ -40,7 +40,7 @@ Initialise				sta start_page
 						lda #<dma_clr
 						sta $d700
 						ldx #1
-						stx BASE_MEM_RAM+1
+						stx BASE_DATA_RAM+1
 						lda start_page
 
 ;**************************************************
@@ -59,7 +59,7 @@ FreeMemory				cmp start_page
 
 						tba
 						pha
-						lda #>BASE_MEM_RAM
+						lda #>BASE_DATA_RAM
 						tab
 
 						;Free memory block starting at page in X
@@ -119,7 +119,7 @@ AllocMemory				ldz #$ff			;return error value
 						;Set Base Page to page allocation table
 						tba
 						pha
-						lda #>BASE_MEM_RAM
+						lda #>BASE_DATA_RAM
 						tab
 
 						;Find first page of requested memory
@@ -182,13 +182,13 @@ end_find_max			inc max_available
 no_mem					rts
 
 ;DMA job to clear page allocation table
-dma_clr		.byte %00000011		;command low byte: FILL
-			.word 256			;1 page 256 bytes
-			.word 0				;fill value
-			.byte 0				;source Bank
-			.word BASE_MEM_RAM	;destination address
-			.byte BANK			;destination Bank
-			.byte 0				;command hi byte
-			.word 0				;modulo
+dma_clr		.byte %00000011			;command low byte: FILL
+			.word size(page_alloc)	;1 page 256 bytes
+			.word 0					;fill value
+			.byte 0					;source Bank
+			.word BASE_DATA_RAM		;destination address
+			.byte BANK				;destination Bank
+			.byte 0					;command hi byte
+			.word 0					;modulo
 
 		.send 

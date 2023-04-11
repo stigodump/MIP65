@@ -8,7 +8,7 @@ TIMERB_H			= $dd07
 timer_ms			= TIMERB_L
 
 
-.section base_ram_data
+.section base_page_ram
 timer_sec		.fill 2
 		.send
 

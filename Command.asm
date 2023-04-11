@@ -6,7 +6,7 @@ CMD_ROUTER_ARP		= (cmd_route_arr-jump_table)>>1
 ;Command status
 ; 
 ;**************************************************
-		.section base_ram_data
+		.section base_page_ram
 command_list	.dstruct DataTypes.COMMAND_LIST
 		.send
 
@@ -15,12 +15,6 @@ usr_cmd_list	.dstruct DataTypes.COMMAND_LIST
 network_status	.dstruct DataTypes.NETWORK_STATUS
 socket1			.dstruct DataTypes.PORT_LISTERN
 socket2			.dstruct DataTypes.PORT_LISTERN
-socket3			.dstruct DataTypes.PORT_LISTERN
-socket4			.dstruct DataTypes.PORT_LISTERN
-socket5			.dstruct DataTypes.PORT_LISTERN
-socket6			.dstruct DataTypes.PORT_LISTERN
-socket7			.dstruct DataTypes.PORT_LISTERN
-socket8			.dstruct DataTypes.PORT_LISTERN
 init_end
 		.send
 
@@ -34,7 +28,7 @@ Execute			lda $d030
 				sta $d030
 				tba
 				pha
-				lda #>BASE_DATA_RAM
+				lda #>BASE_PAGE_RAM
 				tab
 
 				lda usr_cmd_list.command
@@ -68,29 +62,30 @@ do_command		lda #BANK
 				asl a 
 				tax
 				jsr (jump_table,x)
+				;Restore Base Page and $d030
 cmd_exit		pla 
 				tab
-				eom
 				pla
 				sta $d030
 				rts
 
 jump_table		.word Initialise.Initialise		;0
 				.word DHCP.Run					;1
+				.word STMachine.SetConnected	;2
 				;following need network up
-need_net		.word Ethernet.EtherSend		;2
-				.word ARP.SendARPRequest		;3
-cmd_route_arr	.word ARP.RouterARPRequest		;4
+need_net		.word Ethernet.EtherSend		;3
+				.word ARP.SendARPRequest		;4
+cmd_route_arr	.word ARP.RouterARPRequest		;5
 				;following functions need ARP
-need_arp		.word IPv4.SendIPPacket			;5
-				.word UDP.SendUDPPacket			;6
+need_arp		.word IPv4.SendIPPacket			;6
+				.word UDP.SendUDPPacket			;7
 
-copy_cmd_list	;dma job to copy command list from common ram to here
+copy_cmd_list	;dma job to copy user command list to command list
 				.byte %00000000						;command low byte: COPY
 				.word size(command_list)			;size of command list
 				.word usr_cmd_list					;source address
 				.byte BANK							;source Bank
-				.byte <command_list,>BASE_DATA_RAM	;destination address
+				.byte <command_list,>BASE_PAGE_RAM	;destination address
 				.byte BANK							;destination Bank
 				.byte 0								;command hi byte
 				.word 0								;modulo
