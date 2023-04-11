@@ -16,7 +16,7 @@ Initialise		sei
 				bne +
 				rts
 				;Full initialisation
-				;Config RX packet buffer
+				;Config TX/RX packet buffer
 +				lda #>RX_BUFFER_RAM
 				ldx #>(RX_BUFFER_RAM+RX_BUFFER_SIZE-$100)
 				ldy #RX_BUFFER_BANK

@@ -4,7 +4,7 @@ EXIT_NMI			= $f9bb
 SYS_NMI				= $f925
 KEYBOARD_ROW		= $dc01
 
-		.section zero_page
+		.section base_page_ram
 int_flags	.fill 1
 		.send
 
@@ -29,9 +29,10 @@ Initialise		lda #BANK
 				sta $0318
 				lda #>NMIInterrupt
 				sta $0319
-
+				;Enable TX RX interrupts
 				lda #%11000000
 				sta $d6e1
+				;Take Ethernet controller out of reset
 				lda #%00000011
 				sta $d6e0
 				rts
@@ -127,14 +128,14 @@ NMIInterrupt	bit KEYBOARD_ROW
 				;IRQ entry point
 IRQInterrupt	lda $dd0d
 				and #%00000010
-				sta int_flags
+				sta tmr_flags
 				bne not_raster
 				lda $d019
 				bpl not_raster
 do_sys_irq		jmp SYS_IRQ
-				;MAP $4000 to $7fff from bank 4
+				;MAP $4000 to $5fff from bank 4
 not_raster		lda #$00
-				ldx #$c4
+				ldx #$44
 				ldy $011e
 				ldz $011f
 				map
@@ -145,12 +146,13 @@ not_raster		lda #$00
 				tab
 				eom
 
-				bbr 1,int_flags,+
+				lda tmr_flags
+				beq +
 				jsr Interrupts.timer_int
 				
 				;Check for Ethernet interrupts
 +				lda $d6e1
-				bpl ++
+				bpl no_ether_int
 				sta int_flags
 				bbr 5,int_flags,+
 				jsr Interrupts.eth_rx_int
@@ -161,7 +163,7 @@ not_raster		lda #$00
 				sta $d6e1
 
 				;Restore MAP
-				lda $011c
+no_ether_int	lda $011c
 				ldx $011d
 				ldy $011e
 				ldz $011f
@@ -170,5 +172,6 @@ not_raster		lda #$00
 				tab
 				eom
 				jmp EXIT_IRQ
+tmr_flags		nop
 			.here
 		.send

@@ -9,6 +9,7 @@ sender_pa			.fill 4
 target_ha			.fill 6
 target_pa			.fill 4
 				.endstruct
+
 ARP_ENTRY		.struct
 mac_address			.fill 6
 ip_address			.fill 4

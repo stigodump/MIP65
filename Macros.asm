@@ -9,6 +9,7 @@ sta32z		.macro
 				.byte $92
 				.byte \1
 			.endmacro
+			
 eor32z		.macro
 				.byte $ea
 				.byte $52

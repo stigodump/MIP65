@@ -25,7 +25,7 @@ Initialise			lda #0
 ;**************************************************
 					;Read Basic Status register
 SetConStatus		lda #1
-					tsb $d6e6
+					sta $d6e6
 					;Get connection State
 					lda $d6e7
 					and #%00100000

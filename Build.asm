@@ -62,7 +62,7 @@ start			lda #%00000001
 				rts
 
 				;DMA job to copy rom_code
-dma_copy 		.byte %00000000 				;command low byte: COPY+CHAIN
+dma_copy 		.byte %00000000 				;command low byte: COPY
 				.word size(copy_code)			;copy cpount
 				.word copy_code 				;source address
 				.byte 0							;source Bank
@@ -78,16 +78,19 @@ dma_copy 		.byte %00000000 				;command low byte: COPY+CHAIN
 			.virtual MAIN_DATA_RAM
 			.dsection ram_data
 			.cerror * > BASE_DATA_RAM - 1, "RAM error"
+			.warn "Ram ", * - MAIN_DATA_RAM, " bytes"
 			.endv
 
 			.virtual <BASE_DATA_RAM
 			.dsection base_data_ram
 			.cerror * > BASE_PAGE_RAM - 1, "Base data RAM error"
+			.warn "Base Data ", *, " bytes"
 			.endv
 
 			.virtual <BASE_PAGE_RAM
 			.dsection base_page_ram
 			.cerror * > MAIN_CODE_ROM - 1, "Base page RAM error"
+			.warn "Base Page ", *, " bytes"
 			.endv
 
 copy_code	.logical MAIN_CODE_ROM

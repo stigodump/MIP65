@@ -181,7 +181,7 @@ ReceivedPacket		inw udp_rx_count
 					sta rx_data_len+1
 
 					;check active socket port number
-					ldx #8
+					ldx #size(ch_lo_bytes)-1
 -					dex
 					;Checked all sockets
 					bmi system_ports
