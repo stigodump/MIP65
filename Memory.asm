@@ -49,7 +49,6 @@ Initialise				sta start_page
 ; A = page pointer to first page in block
 ; 
 ;**************************************************
-						;Set Base Page to page allocation table
 FreeMemory				cmp start_page
 						bmi no_mem		;< start
 						cmp last_page
@@ -57,6 +56,7 @@ FreeMemory				cmp start_page
 						bne no_mem		;> last
 +						tax
 
+						;Set Base Page to page allocation table
 						tba
 						pha
 						lda #>BASE_DATA_RAM
@@ -94,7 +94,7 @@ chk_end					cpx start_page
 						bra chk_end
 exit_bp					pla 
 						tab
-						rts
+no_mem 					rts
 
 ;**************************************************
 ;**************************************************
@@ -179,7 +179,7 @@ end_find_max			inc max_available
 						pla 
 						tab
 						ldz #0
-no_mem					rts
+						rts
 
 ;DMA job to clear page allocation table
 dma_clr		.byte %00000011			;command low byte: FILL

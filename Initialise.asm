@@ -32,9 +32,7 @@ Initialise		sei
 				jsr StMachine.Initialise
 				jsr Timer.Initialise
 				jsr Interrupts.Initialise
-				;Take Ethernet controller out of reset
 				
-				;cli
 				rts
 
 		.send

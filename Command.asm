@@ -20,7 +20,7 @@ init_end
 
 ;**************************************************************
 		.section rom_code
-				;Is state already busy
+				;BASIC entry point (SYS44400)
 Execute			lda $d030
 				pha
 				;switch CIAs to $DC00
@@ -31,6 +31,7 @@ Execute			lda $d030
 				lda #>BASE_PAGE_RAM
 				tab
 
+				;Is command Initialise
 				lda usr_cmd_list.command
 				beq do_command
 				bbr StMachine.ST_CONNECTED_b,StMachine.state,cmd_exit
@@ -67,6 +68,7 @@ cmd_exit		pla
 				tab
 				pla
 				sta $d030
+
 				rts
 
 jump_table		.word Initialise.Initialise		;0

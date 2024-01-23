@@ -1,11 +1,13 @@
-EXIT_IRQ			= $f9b4
-SYS_IRQ 			= $f95c
-EXIT_NMI			= $f9bb
-SYS_NMI				= $f925
 KEYBOARD_ROW		= $dc01
 
+ETH_TXIDLE			= %10000000
+ETH_RXBLKD			= %01000000
+ETH_RXQEN			= %10000000
+ETH_TXQEN			= %01000000
+ETH_RXQ 			= %00100000
+ETH_TXQ 			= %00010000
+
 		.section base_page_ram
-int_flags	.fill 1
 		.send
 
 		.section rom_code
@@ -21,16 +23,24 @@ Initialise		lda #BANK
 				sta $d701
 				lda #<dma_int_wedge
 				sta $d700
+				lda $0314
+				sta sys_irq_vect
 				lda #<IRQInterrupt
 				sta $0314
+				lda $0315
+				sta sys_irq_vect+1
 				lda #>IRQInterrupt
 				sta $0315
+				lda $0318
+				sta sys_nmi_vect
 				lda #<NMIInterrupt
 				sta $0318
+				lda $0319
+				sta sys_nmi_vect+1
 				lda #>NMIInterrupt
 				sta $0319
-				;Enable TX RX interrupts
-				lda #%11000000
+				;Enable RX interrupts
+				lda #ETH_RXQEN
 				sta $d6e1
 				;Take Ethernet controller out of reset
 				lda #%00000011
@@ -87,16 +97,16 @@ eth_rx_int		lda #$01
 ;Interrupt entry point for packet transmitted
 ; 
 ;**************************************************
-eth_tx_int 		lda $d6e2
-				clc
-				adc Ethernet.total_tx_bytes
-				sta Ethernet.total_tx_bytes
-				lda $d6e3
-				adc Ethernet.total_tx_bytes+1
-				sta Ethernet.total_tx_bytes+1
-				bcc +
-				inw Ethernet.total_tx_bytes+2
-+				jsr StMachine.TXEvent
+eth_tx_int 		;lda $d6e2
+				;clc
+				;adc Ethernet.total_tx_bytes
+				;sta Ethernet.total_tx_bytes
+				;lda $d6e3
+				;adc Ethernet.total_tx_bytes+1
+				;sta Ethernet.total_tx_bytes+1
+				;bcc +
+				;inw Ethernet.total_tx_bytes+2
+				jsr StMachine.TXEvent
 				rts
 
 ;**************************************************
@@ -124,7 +134,7 @@ NMIInterrupt	bit KEYBOARD_ROW
 				lda #0
 				sta $d6e0
 				sta NMIInterrupt+1
-+				jmp SYS_NMI
++				jmp (sys_nmi_vect)
 				;IRQ entry point
 IRQInterrupt	lda $dd0d
 				and #%00000010
@@ -132,7 +142,7 @@ IRQInterrupt	lda $dd0d
 				bne not_raster
 				lda $d019
 				bpl not_raster
-do_sys_irq		jmp SYS_IRQ
+do_sys_irq		jmp (sys_irq_vect)
 				;MAP $4000 to $5fff from bank 4
 not_raster		lda #$00
 				ldx #$44
@@ -151,19 +161,21 @@ not_raster		lda #$00
 				jsr Interrupts.timer_int
 				
 				;Check for Ethernet interrupts
-+				lda $d6e1
-				bpl no_ether_int
-				sta int_flags
-				bbr 5,int_flags,+
-				jsr Interrupts.eth_rx_int
-+				bbr 4,int_flags,+
++				;bbs StMachine.ST_TX_BUSY,StMachine.state,+
+				lda $d6e0
+				bpl +
 				jsr Interrupts.eth_tx_int
-+				lda int_flags
-				and #$f0 
+				
++				lda $d6e1
+				and #ETH_RXQ
+				beq +
+				jsr Interrupts.eth_rx_int
+				
+				lda #ETH_RXQEN | ETH_RXQ
 				sta $d6e1
 
 				;Restore MAP
-no_ether_int	lda $011c
++				lda $011c
 				ldx $011d
 				ldy $011e
 				ldz $011f
@@ -171,7 +183,10 @@ no_ether_int	lda $011c
 				pla 
 				tab
 				eom
-				jmp EXIT_IRQ
-tmr_flags		nop
+				jmp (sys_irq_vect)
+
+tmr_flags		.byte 0
+sys_irq_vect	.word 0
+sys_nmi_vect 	.word 0
 			.here
 		.send

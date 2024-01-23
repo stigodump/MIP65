@@ -17,7 +17,7 @@ ST_DHCP_STATIC 		= 1<<ST_DHCP_STATIC_b	;DHCP = 1, Static = 0
 ST_NETWORK_UP		= 1<<ST_NETWORK_UP_b
 ST_RUN_CMD 			= 1<<ST_RUN_CMD_b
 
-TX_TIMEOUT		= 2
+TX_TIMEOUT		= 4
 
 		.section base_page_ram
 rx_timer 			.fill 1
