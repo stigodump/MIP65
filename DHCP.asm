@@ -1,4 +1,4 @@
-DHCP_HEADER	.struct 
+DHCP_HEADER		.struct 
 op 		 			.fill 1
 htype 				.fill 1
 hlen 				.fill 1
@@ -15,7 +15,7 @@ sname				.fill 64
 bname				.fill 128
 mcookie				.fill 4
 options				.fill 1
-			.endstruct
+				.endstruct
 
 DHCP_DISCHEAD_SIZE 	= size(DHCP_HEADER)+opt_disco_end-opt_discover
 DHCP_REQTHEAD_SIZE	= size(DHCP_HEADER)+opt_reqst_end-opt_request
@@ -26,16 +26,16 @@ WAITING_OFFER		= %10000001
 WAITING_ACK			= %10000010
 DHCP_TIMEOUT		= 5 ;in seconds
 
-		.section base_page_ram
+				.section base_page_ram
 header_tx_pntr		.fill 4
 header_rx_pntr		.fill 4
 options_pntr		.fill 4
 option_pntr			.fill 4
 dhcp_status			.fill 1
 temp_bp				.fill 1
-		.send 
+				.send 
 
-		.section rom_code
+				.section rom_code
 magic_cookie		.byte $63,$82,$53,$63
 					;discover and request options
 opt_discover		.byte $35,$01,$01 			;DHCP discover
@@ -96,27 +96,27 @@ Run					lda #StMachine.ST_TX_BUSY|StMachine.ST_RX_BUSY
 					;Set operation type
 					ldz #DHCP_HEADER.op
 					lda #$01
-					sta32z header_tx_pntr
+					sta [header_tx_pntr],z
 					;Set hardwarew type
 					ldz #DHCP_HEADER.htype
-					sta32z header_tx_pntr
+					sta [header_tx_pntr],z
 					;Set hardware address length
 					ldz #DHCP_HEADER.hlen
 					lda #$06
-					sta32z header_tx_pntr
+					sta [header_tx_pntr],z
 					;Set transaction ID
 					ldz #DHCP_HEADER.xid
 					lda Timer.timer_sec
-					sta32z header_tx_pntr
+					sta [header_tx_pntr],z
 					inz
 					lda Timer.TIMERB_L
-					sta32z header_tx_pntr
+					sta [header_tx_pntr],z
 					inz
 					lda Timer.TIMERA_H
-					sta32z header_tx_pntr
+					sta [header_tx_pntr],z
 					inz
 					lda Timer.TIMERA_L
-					sta32z header_tx_pntr
+					sta [header_tx_pntr],z
 					;Copy magic cookie & options
 					lda header_tx_pntr+1
 					sta options_pntr+1
@@ -125,7 +125,7 @@ Run					lda #StMachine.ST_TX_BUSY|StMachine.ST_RX_BUSY
 					ldy #0
 					ldz #0
 -					lda magic_cookie,y
-					sta32z options_pntr
+					sta [options_pntr],z
 					iny
 					inz
 					cpy #opt_disco_end-magic_cookie+1
@@ -136,7 +136,7 @@ Run					lda #StMachine.ST_TX_BUSY|StMachine.ST_RX_BUSY
 					ldx #6
 					ldy #$ff
 -					lda Command.network_status.mac_address-1,x
-					sta32z header_tx_pntr
+					sta [header_tx_pntr],z
 					sty Command.command_list.ether_dest_mac-1,x
 					dez
 					dex
@@ -221,8 +221,8 @@ get_dhcp_pkt		lda temp_bp		;offset to begining of data
 					;Check XID
 					ldx #4
 					ldz #DHCP_HEADER.xid
--					lda32z header_tx_pntr
-					eor32z header_rx_pntr
+-					lda [header_tx_pntr],z
+					eor [header_rx_pntr],z
 					bne xid_mismatch
 					inz
 					dex
@@ -246,7 +246,7 @@ get_dhcp_pkt		lda temp_bp		;offset to begining of data
 					jsr find_option
 					beq packet_err
 					ldz #1
-					lda32z option_pntr
+					lda [option_pntr],z
 					;Is it an offer
 					cmp #2
 					bne packet_err
@@ -254,7 +254,7 @@ get_dhcp_pkt		lda temp_bp		;offset to begining of data
 					ldx #0
 					ldz #DHCP_HEADER.options
 -					lda opt_request,x
-					sta32z header_tx_pntr
+					sta [header_tx_pntr],z
 					inx
 					inz
 					cpx #opt_reqst_end-opt_request+1
@@ -266,8 +266,8 @@ get_dhcp_pkt		lda temp_bp		;offset to begining of data
 					ldz #4
 					ldy #DHCP_HEADER.options+((opt_srv_ip+1)-opt_request)
 					sty header_tx_pntr
--					lda32z option_pntr
-					sta32z header_tx_pntr
+-					lda [option_pntr],z
+					sta [header_tx_pntr],z
 					dey
 					dez
 					bne -
@@ -277,8 +277,8 @@ get_dhcp_pkt		lda temp_bp		;offset to begining of data
 					ldy #DHCP_HEADER.options+((opt_req_ip+1)-opt_request)
 					sty header_tx_pntr
 					ldz #4
--					lda32z header_rx_pntr
-					sta32z header_tx_pntr
+-					lda [header_rx_pntr],z
+					sta [header_tx_pntr],z
 					dez
 					bne -
 					;Set low byte of pointers back to zero
@@ -309,7 +309,7 @@ ack_pkt				lda header_rx_pntr
 					jsr find_option
 					beq packet_err
 					ldz #1
-					lda32z option_pntr
+					lda [option_pntr],z
 					;Is it a ACK
 					cmp #5
 					bne packet_err
@@ -318,14 +318,14 @@ ack_pkt				lda header_rx_pntr
 					jsr find_option
 					beq ++
 					ldz #0 	;Get option data length
-					lda32z option_pntr
+					lda [option_pntr],z
 					cmp #3*4+1
 					bcc +
 					lda #3*4
 +					tax
 					inw option_pntr
 					ldy #0
--					lda32z option_pntr
+-					lda [option_pntr],z
 					sta Command.network_status.dns1,y
 					inz
 					iny
@@ -339,7 +339,7 @@ ack_pkt				lda header_rx_pntr
 					ldz #0
 					ldx #4
 					inw option_pntr
--					lda32z option_pntr
+-					lda [option_pntr],z
 					sta Command.network_status.subnet_mask,y
 					iny
 					inz
@@ -353,7 +353,7 @@ ack_pkt				lda header_rx_pntr
 					ldz #0
 					ldx #4
 					inw option_pntr
--					lda32z option_pntr
+-					lda [option_pntr],z
 					sta Command.network_status.gateway_addr,y
 					sta command.usr_cmd_list.ip_dest_addr,y
 					iny
@@ -364,7 +364,7 @@ ack_pkt				lda header_rx_pntr
 					;set network address
 +					ldz #DHCP_HEADER.yiaddr
 					ldx #0
--					lda32z header_rx_pntr
+-					lda [header_rx_pntr],z
 					sta Command.network_status.ip_address,x
 					and Command.network_status.subnet_mask,x
 					sta Command.network_status.network_addr,x
@@ -448,7 +448,7 @@ find_options		clc
 					sta options_pntr+1
 					ldx #0
 					ldz #0
-f_loop				lda32z options_pntr
+f_loop				lda [options_pntr],z
 					cmp magic_cookie,x
 					bne +
 					inx
@@ -488,14 +488,14 @@ find_option 		sta temp_bp
 					sta option_pntr+1
 					ldx #64				;Max ammount of options
 					ldz #0
--					lda32z option_pntr  ;Get option number
+-					lda [option_pntr],z ;Get option number
 					beq +				;Skip $00 padding
 					cmp temp_bp
 					beq found_exit		;Option found
 					cmp #$ff
 					beq exit			;$ff end of options
 					inw option_pntr
-					lda32z option_pntr  ;Get option length
+					lda [option_pntr],z ;Get option length
 					clc
 					adc option_pntr
 					sta option_pntr
@@ -509,7 +509,7 @@ found_exit			inw option_pntr 	;point to option length
 					ldx #1
 					rts
 
-		.send
+				.send
 
 
 

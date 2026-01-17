@@ -1,29 +1,29 @@
-UDP_HEADER	.struct
+UDP_HEADER		.struct
 source_port_num		.fill 2
 dest_port_num		.fill 2
 total_length		.fill 2
 checksum			.fill 2
-			.endstruct
+				.endstruct
 UDP_HEAD_SIZE		= size(UDP_HEADER)
 
 SourcePort 			= header.source_port_num
 DestPort 			= header.dest_port_num
 DestIP 				= IPv4.header.dest_ip
 
-		.section base_page_ram
+				.section base_page_ram
 skt_pntr			.fill 2
 udp_rx_count		.fill 2
 temp_bp				.fill 1
 rx_udp_offset		.fill 1
 rx_dest_port		.fill 2
 rx_data_len			.fill 2
-		.send 
+				.send 
 
-		.section ram_data
+				.section ram_data
 header 				.dstruct UDP_HEADER
-		.send
+				.send
 
-		.section rom_code
+				.section rom_code
 ;**************************************************
 ;**************************************************
 ;Initialise UDP parameters
@@ -310,4 +310,4 @@ channels	:=(Command.socket1,Command.socket2)
 ch_lo_bytes			.byte <channels
 ch_hi_bytes			.byte >channels
 
-	.send
+				.send

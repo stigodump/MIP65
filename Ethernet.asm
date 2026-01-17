@@ -29,22 +29,22 @@ RXDestAddrH			= dma_list_rx.dest_addr_h
 RXDestBank			= dma_list_rx.dest_bank
 
 
-		.section base_page_ram
-pkt_rx_info		.fill 2		;Received packet info
-pkt_error_cnt	.fill 2		;16bit packet error counter
-total_rx_bytes	.fill 4 	;32bit total received data bytes
-total_tx_bytes	.fill 4 	;32bit total sent data bytes
-ether_buff_ptr	.fill 4 	;32bit pointer to Ethernet TX/RX buffer
-temp_bp			.fill 1
-		.send 
+				.section base_page_ram
+pkt_rx_info			.fill 2		;Received packet info
+pkt_error_cnt		.fill 2		;16bit packet error counter
+total_rx_bytes		.fill 4 	;32bit total received data bytes
+total_tx_bytes		.fill 4 	;32bit total sent data bytes
+ether_buff_ptr		.fill 4 	;32bit pointer to Ethernet TX/RX buffer
+temp_bp				.fill 1
+				.send 
 ;allocate RAM for Ethernet frame header & DMA list
-		.section ram_data
-header 			.dstruct ETHER_HEADER
-dma_list_tx		.dstruct DataTypes.DMA_LIST_ENHD
-dma_list_rx		.dstruct DataTypes.DMA_LIST_ENHD
-		.send
+				.section ram_data
+header 				.dstruct ETHER_HEADER
+dma_list_tx			.dstruct DataTypes.DMA_LIST_ENHD
+dma_list_rx			.dstruct DataTypes.DMA_LIST_ENHD
+				.send
 
-		.section rom_code
+				.section rom_code
 ;**************************************************
 ;**************************************************
 ;Initialise MAC address and DMA list
@@ -298,12 +298,12 @@ AddDataSend			tax
 PacketReceived		ldx #ETHER_RX_PKT_SIZE
 					;Get ether type from Ethernet header
 					ldz #ETHER_RX_PKT.ethernet_header.ether_type
-					#lda32z ether_buff_ptr
+					lda [ether_buff_ptr],z
 					inz
 					cmp #$08
 					bne ++
 					;Ether type $0800
-					#lda32z ether_buff_ptr
+					lda [ether_buff_ptr],z
 					bne +
 					jmp IPv4.ReceivedPacket
 					;ether type $0806
@@ -354,4 +354,4 @@ CopyRXData			sta temp_bp
 					sta $d705	;Enhanced DMA job
 					rts
 					
-		.send
+				.send

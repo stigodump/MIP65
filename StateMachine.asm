@@ -19,17 +19,17 @@ ST_RUN_CMD 			= 1<<ST_RUN_CMD_b
 
 TX_TIMEOUT		= 4
 
-		.section base_page_ram
+				.section base_page_ram
 rx_timer 			.fill 1
 tx_timer			.fill 1
 state 				.fill 1
-		.send
+				.send
 
-		.section ram_data
+				.section ram_data
 timeout_pntr		.fill 2
-		.send
+				.send
 
-		.section rom_code
+				.section rom_code
 
 ;**************************************************
 ;**************************************************
@@ -181,5 +181,5 @@ msg_exit			stz Command.usr_cmd_list.result
 					sta Command.network_status.status
 sm_exit				rts
 
-		.send
+				.send
 

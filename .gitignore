@@ -1,0 +1,5 @@
+Build.sym
+Build.txt
+M65IP.sublime-*
+UDP*/
+make

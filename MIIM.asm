@@ -1,11 +1,11 @@
 
-		.section base_page_ram
+				.section base_page_ram
 conn_status			.fill 1
 conn_tmr			.fill 1
-		.send
+				.send
 
 ;**************************************************************
-		.section rom_code
+				.section rom_code
 
 ;**************************************************
 ;**************************************************
@@ -44,4 +44,4 @@ SetConStatus		lda #1
 					bbr 5,conn_status,StMachine.DisConnEvent
 					jmp StMachine.ConnectionEvent
 					
-		.send
+				.send

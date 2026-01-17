@@ -1,4 +1,4 @@
-IPV4_HEADER	.struct
+IPV4_HEADER		.struct
 Ver_IHL 			.fill 1
 DSCP_ENC			.fill 1
 total_length		.fill 2
@@ -9,19 +9,19 @@ protocol			.fill 1
 h_checksum			.fill 2
 source_ip			.fill 4
 dest_ip				.fill 4
-			.endstruct
+				.endstruct
 IPv4_HEAD_SIZE		= size(IPV4_HEADER)
 
-		.section base_page_ram
+				.section base_page_ram
 checksum			.fill 2
 ipv4_rx_count		.fill 2
-		.send 
+				.send 
 
-		.section ram_data
-header 			.dstruct IPV4_HEADER
-		.send
+				.section ram_data
+header 				.dstruct IPV4_HEADER
+				.send
 
-		.section rom_code
+				.section rom_code
 
 ;**************************************************
 ;**************************************************
@@ -203,4 +203,4 @@ ReceivedPacket		inw ipv4_rx_count
 					jmp UDP.ReceivedPacket
 +					rts
 
-		.send
+				.send
